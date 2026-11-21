@@ -1232,7 +1232,17 @@ function showInst(){ if(standalone || framed || store.get("im-inst-x",false)) re
 window.addEventListener("beforeinstallprompt",e=>{ e.preventDefault(); deferred=e; $("#instTx").textContent="Queda con el logo en tu pantalla, como una app."; $("#instGo").hidden=false; showInst(); });
 $("#instGo").onclick=async()=>{ if(!deferred) return; deferred.prompt(); await deferred.userChoice; deferred=null; $("#inst").hidden=true; };
 $("#instX").onclick=()=>{ $("#inst").hidden=true; store.set("im-inst-x",true); };
-if(/iphone|ipad|ipod/i.test(navigator.userAgent)) setTimeout(showInst, 4000);
+const UA=navigator.userAgent, isIOS=/iphone|ipad|ipod/i.test(UA)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1), isAnd=/android/i.test(UA);
+const inApp=/Instagram|FBAN|FBAV|FB_IAB|FBIOS|WhatsApp|Line\/|TikTok|musical_ly|Snapchat|; wv\)/i.test(UA);
+if(inApp && (isIOS||isAnd)){
+  $("#instTx").textContent = isIOS ? "Estás en el navegador de Instagram/WhatsApp. Tocá ⋯ arriba a la derecha, elegí “Abrir en Safari” y ahí Compartir → “Agregar a inicio”." : "Estás en el navegador de Instagram/WhatsApp. Tocá ⋮ arriba a la derecha, elegí “Abrir en Chrome” y ahí ⋮ → “Agregar a la pantalla principal”.";
+  setTimeout(showInst, 3000);
+} else if(isIOS){
+  $("#instTx").textContent = "Tocá Compartir (el cuadrado con la flecha) y después “Agregar a inicio”.";
+  setTimeout(showInst, 4000);
+} else if(isAnd){
+  setTimeout(()=>{ if(!deferred){ $("#instTx").textContent="Tocá ⋮ arriba a la derecha y elegí “Agregar a la pantalla principal” o “Instalar app”."; showInst(); } }, 6000);
+}
 if("serviceWorker" in navigator && !framed && location.protocol==="https:") navigator.serviceWorker.register("sw.js").catch(()=>{});
 
 /* ---------- Arranque ---------- */

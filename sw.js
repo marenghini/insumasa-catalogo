@@ -1,5 +1,5 @@
 /* InsuMasa: guarda el catálogo para que abra rápido; siempre intenta traer la versión nueva primero */
-const C='insumasa-v1';
+const C='insumasa-v2';
 self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(C).then(c=>c.addAll(['./','icon-192.png','manifest.webmanifest'])).catch(()=>{}));});
 self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==C).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
 self.addEventListener('fetch',e=>{ if(e.request.method!=='GET'||new URL(e.request.url).origin!==location.origin) return;
