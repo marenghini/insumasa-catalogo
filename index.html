@@ -1106,7 +1106,7 @@ $("#send").addEventListener("click",e=>{
   if(!check()){ e.preventDefault(); return; }
   updateLink();
   const d=new Date(); store.set("im-last",{cart:{...cart}, fecha:d.toLocaleDateString("es-AR",{day:"numeric",month:"numeric"})});
-  store.set("im-datos",{nom:$("#nom").value.trim(), dir:$("#dir").value.trim()});
+  saveDatos();
   // El pedido ya salió a WhatsApp: el carrito vuelve a cero. Si el cliente no lo mandó, lo recupera con "Volver a mi pedido".
   setTimeout(()=>{ cart={}; save(); totals(); render(); $("#cartWrap").hidden=true; $("#thanks").hidden=false; $("#sheet .panel").scrollTop=0; }, 300);
 });
@@ -1131,7 +1131,10 @@ function repeatLast(){
   save(); totals(); render(); toast(n?"Cargamos tu último pedido":"Esos productos ya no están en el catálogo");
   if(n) openSheet("#sheet");
 }
-{ const d=store.get("im-datos",null); if(d){ $("#nom").value=d.nom||""; $("#dir").value=d.dir||""; } }
+// Datos del cliente: quedan guardados en su celu para la próxima compra
+function saveDatos(){ store.set("im-datos",{nom:$("#nom").value.trim(), dir:$("#dir").value.trim(), obs:$("#obs").value.trim()}); }
+["#nom","#dir","#obs"].forEach(s=>$(s).addEventListener("input",saveDatos));
+{ const d=store.get("im-datos",null); if(d){ $("#nom").value=d.nom||""; $("#dir").value=d.dir||""; $("#obs").value=d.obs||""; } }
 
 /* ---------- Hojas (pedido, categorías, recetas) ---------- */
 function openSheet(id){ closeAll(); $(id).hidden=false; document.body.style.overflow="hidden"; if(id==="#sheet"){ $("#thanks").hidden=true; $("#cartWrap").hidden=false; renderCart(); } }
