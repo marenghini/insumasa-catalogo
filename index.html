@@ -330,7 +330,7 @@ button.ship u{font-weight:700;color:var(--brand);white-space:nowrap}
         <p>Se abrió WhatsApp con tu pedido listo: tocá <b>Enviar</b> para que nos llegue. Enseguida te respondemos para coordinar la entrega en tu domicilio.</p>
         <div class="acts">
           <button type="button" class="btn main" id="newOrder" style="justify-content:center">Empezar un pedido nuevo</button>
-          <button type="button" class="btn alt" id="backOrder">Volver a mi pedido</button>
+          <button type="button" class="btn alt" id="backOrder">No lo mandé, volver a mi pedido</button>
         </div>
       </div>
     </div>
@@ -1107,7 +1107,8 @@ $("#send").addEventListener("click",e=>{
   updateLink();
   const d=new Date(); store.set("im-last",{cart:{...cart}, fecha:d.toLocaleDateString("es-AR",{day:"numeric",month:"numeric"})});
   store.set("im-datos",{nom:$("#nom").value.trim(), dir:$("#dir").value.trim()});
-  setTimeout(()=>{ $("#cartWrap").hidden=true; $("#thanks").hidden=false; $("#sheet .panel").scrollTop=0; }, 300);
+  // El pedido ya salió a WhatsApp: el carrito vuelve a cero. Si el cliente no lo mandó, lo recupera con "Volver a mi pedido".
+  setTimeout(()=>{ cart={}; save(); totals(); render(); $("#cartWrap").hidden=true; $("#thanks").hidden=false; $("#sheet .panel").scrollTop=0; }, 300);
 });
 function toast(m){ const t=$("#toast"); t.textContent=m; t.hidden=false; clearTimeout(toast.h); toast.h=setTimeout(()=>t.hidden=true,2200); }
 $("#copy").addEventListener("click",()=>{
@@ -1119,7 +1120,11 @@ $("#copy").addEventListener("click",()=>{
 function clearCart(){ cart={}; save(); totals(); render(); renderCart(); }
 $("#clear").addEventListener("click",()=>{ clearCart(); toast("Pedido vacío"); });
 $("#newOrder").addEventListener("click",()=>{ clearCart(); closeAll(); toast("¡Listo! Podés armar otro pedido"); });
-$("#backOrder").addEventListener("click",()=>{ $("#thanks").hidden=true; $("#cartWrap").hidden=false; });
+$("#backOrder").addEventListener("click",()=>{
+  const last=store.get("im-last",null);
+  if(last){ for(const k in last.cart){ if(validKey(k)) cart[k]=last.cart[k]; } save(); totals(); render(); }
+  $("#thanks").hidden=true; $("#cartWrap").hidden=false; renderCart(); formSync();
+});
 function repeatLast(){
   const last=store.get("im-last",null); if(!last) return;
   let n=0; for(const k in last.cart){ if(validKey(k)){ cart[k]=last.cart[k]; n++; } }
