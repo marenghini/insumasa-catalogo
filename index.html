@@ -75,7 +75,8 @@ main .wrap{padding-block:6px 24px}
 .step button{border:0;background:transparent;color:inherit;font:700 17px var(--body);width:34px;height:32px;cursor:pointer}
 .step span{min-width:24px;text-align:center;font-weight:700;font-variant-numeric:tabular-nums}
 .empty{color:var(--muted);text-align:center;padding:40px 0}
-.cartbar{position:fixed;left:0;right:0;bottom:0;z-index:25;padding-bottom:calc(10px + env(safe-area-inset-bottom,0px));padding-top:10px;background:linear-gradient(to top,var(--bg) 70%,transparent)}
+.cartbar{position:fixed;left:0;right:0;bottom:0;z-index:25;padding-bottom:calc(10px + env(safe-area-inset-bottom,0px));padding-top:10px;background:var(--surface);border-top:1px solid var(--line);box-shadow:0 -6px 18px rgb(0 0 0 / .12)}
+@media (prefers-color-scheme: dark){.cartbar{box-shadow:0 -6px 18px rgb(0 0 0 / .45)}.cartbar .btn.main{background:var(--brand);color:#fff}}
 .cartbar .wrap{display:flex}
 .btn{border:0;border-radius:14px;font:700 16px var(--body);cursor:pointer;padding:14px 18px}
 .btn.main{flex:1;background:var(--head);color:var(--head-ink);display:flex;justify-content:space-between;align-items:center;gap:12px}
@@ -263,7 +264,6 @@ button.ship u{font-weight:700;color:var(--brand);white-space:nowrap}
   </div>
   <div class="chips" id="chips" role="toolbar" aria-label="Secciones">
     <button class="chip" data-view="hot" aria-pressed="false">Lo más pedido</button>
-    <button class="chip" data-view="of" aria-pressed="false">Ofertas</button>
     <button class="chip" data-view="pur" aria-pressed="false">Puratos</button>
     <button class="chip" id="catBtn" aria-pressed="false" aria-haspopup="dialog">☰ Categorías</button>
   </div>
@@ -398,7 +398,7 @@ const AJUSTES = {
   /* Lo más pedido: productos "calientes", en este orden */
   calientes: ["P-TP_000397","P-TP_000398","P-TP_000410","P-TP_000411","P-NuevoA0161","P-TP_000092","P-TP_000081","P-TP_000087","D-RCGR001-204","P-TP_000387","P-TP_000546","P-TP_000585","P-TP_000177"],
   /* Ofertas de la semana: id -> precio de oferta del bulto (el fraccionado se recalcula solo) */
-  ofertas: {"P-TP_000546":27000,"P-TP_000177":42000},
+  ofertas: {},
   ofertasHasta: "26/11/2026",
   /* Productos que no se venden (no aparecen en el catálogo) */
   ocultar: ["D-RCMG007-212", "D-RCMV002-213", "P-TP_000539", "P-TP_000540", "D-D219-219", "D-PRPM005-132", "D-PRCH122-55", "P-TP_000120", "M-146", "P-TP_000587", "M-806", "M-533", "M-754", "P-NuevoA0100", "D-LSAM001-71", "P-NuevoA0126", "D-RCLV001-194", "M-259", "M-814", "P-TP_000434", "P-TP_000567", "M-237", "P-TP_000097", "P-TP_000096", "P-TP_000168", "D-CIGL001-32", "P-TP_000369", "P-TP_000407", "P-TP_000405", "P-TP_000448", "P-TP_000447", "P-NuevoA0105", "D-EGOL002-224", "M-300", "M-343", "P-NuevoA0011", "M-694", "P-NuevoA0248", "M-171", "M-774", "M-48", "P-TP_000563", "P-NuevoA0030", "M-500", "D-PVFR002-110", "P-NuevoA0204"],
@@ -1115,8 +1115,6 @@ function render(){
     if(!html) html=`<p class="empty">No encontramos productos con “${esc(raw)}”.<br>Probá con otra palabra o <a href="${waLink("Hola InsuMasa, ¿tienen "+raw+"?")}" target="_blank" rel="noopener">preguntanos por WhatsApp</a>.</p>`;
   } else if(view==="hot"){
     html=section("🔥 Lo más pedido", HOT.map(id=>byId[id]), "", "Lo que más sale en panaderías y pastelerías.");
-  } else if(view==="of"){
-    html=section("Ofertas de la semana", OFS.map(id=>byId[id]), "", `Válidas hasta el ${AJUSTES.ofertasHasta} o hasta agotar stock.`) || `<p class="empty">Esta semana no hay ofertas cargadas.</p>`;
   } else if(view==="fav"){
     html=section("♥ Mis favoritos", [...favs].map(id=>byId[id])) || `<p class="empty">Todavía no marcaste favoritos.<br>Tocá el corazón de un producto y lo vas a encontrar acá.</p>`;
   } else if(view==="pur"){
@@ -1127,11 +1125,10 @@ function render(){
     html=heroCards();
     if(favs.size) html+=section("♥ Mis favoritos", [...favs].map(id=>byId[id]));
     html+=section("🔥 Lo más pedido", HOT.map(id=>byId[id]), "", "Lo que más sale en panaderías y pastelerías.");
-    html+=section("Ofertas de la semana", OFS.map(id=>byId[id]), `<span class="tag">hasta el ${AJUSTES.ofertasHasta}</span>`);
     for(const c of CATS) html+=section(catTitle(c), DATA.items.filter(i=>i.c===c),"","",true);
   }
   if(words.length || view!=="home"){
-    const tit = words.length ? `Resultados para “${esc(raw)}”` : view==="hot" ? "🔥 Lo más pedido" : view==="of" ? "Ofertas" : view==="pur" ? "Puratos · línea profesional" : view==="fav" ? "♥ Mis favoritos" : catTitle(cat);
+    const tit = words.length ? `Resultados para “${esc(raw)}”` : view==="hot" ? "🔥 Lo más pedido" : view==="pur" ? "Puratos · línea profesional" : view==="fav" ? "♥ Mis favoritos" : catTitle(cat);
     html = `<div class="backbar"><button type="button" class="back" id="goHome" aria-label="Volver al inicio"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg></button><div><small>Volver a todos los productos</small><b>${tit}</b></div></div>` + html;
   }
   $("#list").innerHTML = html;
