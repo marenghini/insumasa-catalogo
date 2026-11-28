@@ -395,8 +395,16 @@ const AJUSTES = {
   envioGratisDesde: 50000,
   costoEnvio: 3000,
   horarios: [["Mañana","9 a 13 h"],["Tarde","16 a 20 h"]],
-  /* Lo más pedido: productos "calientes", en este orden */
-  calientes: ["P-TP_000397","P-TP_000398","P-TP_000410","P-TP_000411","P-NuevoA0161","P-TP_000092","P-TP_000081","P-TP_000087","D-RCGR001-204","P-TP_000387","P-TP_000546","P-TP_000585","P-TP_000177"],
+  /* Lo más pedido: 1 producto de cada grupo, en este orden. Cambia solo cada lunes
+     (va pasando al siguiente de cada lista). Para sumar o sacar productos, editar las listas. */
+  calientesSemana: [
+    /* Harinas de 1 kg */ ["P-TP_000410","P-TP_000411","M-626","M-128","P-TP_000412","M-198","P-TP_000415","M-546","M-789"],
+    /* Levaduras */ ["P-NuevoA0161","P-TP_000092","M-102","M-202","D-RCLV001-194","D-MPLV001-195","D-PRLV001-196","M-213"],
+    /* Dulce de leche */ ["P-TP_000546","P-TP_000130","P-TP_000129","M-186","D-CADL001-167","P-TP_000128","M-488","P-TP_000137"],
+    /* Chocolates */ ["P-TP_000367","P-TP_000376","P-TP_000380","P-TP_000467","P-NuevoA0027","P-TP_000381","M-225","P-NuevoA0257","M-412","P-TP_000377"],
+    /* Mantecas */ ["P-TP_000032","P-TP_000473","P-NuevoA01291","P-TP_000033","M-428"],
+    /* Cremas */ ["M-629","P-TP_000035","P-TP_000036","M-157","P-TP_000037","M-713"]
+  ],
   /* Ofertas de la semana: id -> precio de oferta del bulto (el fraccionado se recalcula solo) */
   ofertas: {},
   ofertasHasta: "26/11/2026",
@@ -823,7 +831,9 @@ const store = { get(k,d){ try{ const v=localStorage.getItem(k); return v?JSON.pa
 
 /* Ofertas: el precio de lista queda en i.op */
 for(const id in AJUSTES.ofertas){ const i=byId[id]; if(i && AJUSTES.ofertas[id] < i.p){ i.op=i.p; i.p=AJUSTES.ofertas[id]; } }
-const HOT = AJUSTES.calientes.filter(id=>byId[id]);
+/* Semana actual (arranca cada lunes, hora del celular del cliente) */
+const SEMANA = (()=>{ const d=new Date(); const dia=Math.floor(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())/864e5); return Math.floor((dia-4)/7) - 2968; })(); /* 0 = semana del 23/11/2026 */
+const HOT = AJUSTES.calientesSemana.map(g=>{ const ok=g.filter(id=>byId[id]); return ok.length ? ok[((SEMANA % ok.length) + ok.length) % ok.length] : null; }).filter(Boolean);
 const OFS = Object.keys(AJUSTES.ofertas).filter(id=>byId[id] && byId[id].op);
 /* Puratos va al final, como línea profesional */
 const CATS = [...DATA.cats.filter(c=>c!=="Puratos"), ...(DATA.cats.includes("Puratos")?["Puratos"]:[])];
